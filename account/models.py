@@ -1,5 +1,6 @@
 import datetime
 import binascii
+import os
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -8,10 +9,8 @@ class User(AbstractUser):
     mobile_number = models.CharField(max_length=500, blank=True, null=True, default=None)
     email_is_verified = models.BooleanField(default=False)
     token = models.CharField(max_length=40, null=True, blank=True)
-    created = models.DateTimeField(auto_now=True)
     remember_me = models.BooleanField(default=False)
     token_created = models.DateTimeField(auto_now=True)
-    deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username
@@ -30,20 +29,8 @@ class User(AbstractUser):
             return self.token
 
     def logout_user(self):
-        print(1, self.token)
         self.token = None
         self.save()
-        print(2, self.token)
-
-    @property
-    def expired(self):
-        if not self.remember_me and self.token_created > (datetime.datetime.now() - datetime.timedelta(
-                days=7)) and not self.deleted:
-            return False
-        if self.remember_me and (self.token_created > datetime.datetime.now() - datetime.timedelta(
-                days=30)) and not self.deleted:
-            return False
-        return True
 
     @staticmethod
     def generate_token():
@@ -53,6 +40,7 @@ class User(AbstractUser):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     picture = models.ImageField(null=True, blank=True)
+    bio = models.TextField(max_length=150, null=True, blank=True)
 
     def __str__(self):
         return self.user.username
