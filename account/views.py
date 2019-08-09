@@ -1,4 +1,4 @@
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
@@ -11,8 +11,28 @@ from django.views.generic import FormView, TemplateView
 
 from account.tokens import account_activation_token
 from .models import User
-from .forms import RegisterForm
+from .forms import RegisterForm, LoginForm
 from .utils import send_html_mail
+
+
+class IndexView(TemplateView):
+    template_name = "account/index.html"
+
+
+class LoginView(FormView):
+    template_name = 'account/login.html'
+    form_class = LoginForm
+
+    def form_valid(self, form):
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+
+        user = authenticate(username=username, password=password)
+        if user:
+            return HttpResponseRedirect(reverse("account:index"))
+        else:
+            return render(self.request, self.template_name, {"form": form,
+                                                             "error_message": "Invalid username or password"})
 
 
 class RegisterView(FormView):
