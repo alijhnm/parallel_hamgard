@@ -93,3 +93,5 @@ def activate(request, uidb64, token):
         return HttpResponseRedirect(reverse("account:failure"))
 
 
+class HomeView(TemplateView):
+    template_name = "account/home.html"
