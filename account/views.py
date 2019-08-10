@@ -1,4 +1,4 @@
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
@@ -17,6 +17,14 @@ from .utils import send_html_mail
 
 class IndexView(TemplateView):
     template_name = "account/index.html"
+
+
+@require_http_methods(["POST", "GET"])
+def log_out(request):
+    user = request.user
+    if user:
+        logout(request)
+    return HttpResponseRedirect(reverse('home'))
 
 
 class LoginView(FormView):
@@ -75,11 +83,10 @@ class RegisterView(FormView):
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
                 'token': account_activation_token.make_token(user),
             })
-            print("In Views. Sending email.")
             send_html_mail(subject, message, (user.email,))
             # Login the user
             login(self.request, user)
-            return render(self.request, "account/account_activation_sent.html", {})
+            return HttpResponseRedirect(reverse('account:account_activation_sent'))
 
 
 class AccountActivationSent(TemplateView):
@@ -102,7 +109,6 @@ def activate(request, uidb64, token):
     except (TypeError, ValueError, OverflowError, User.DoesNotExist) as e:
         user = None
         print(e)
-    print(user)
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
         user.email_is_verified = True
