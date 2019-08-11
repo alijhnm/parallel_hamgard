@@ -52,15 +52,15 @@ class EditProfileView(LoginRequiredMixin, FormView):
     form_class = EditProfileForm
 
     def form_valid(self, form):
-
-        print(self.kwargs)
         first_name = form.cleaned_data["first_name"]
         last_name = form.cleaned_data["last_name"]
         email = form.cleaned_data["email"]
         phone_number = form.cleaned_data["phone_number"]
         user = self.request.user
+        image = self.request.FILES["profile_image"]
 
-        print(user)
+        user.profile.picture = image
+        user.profile.save()
         user.first_name = first_name
         user.last_name = last_name
         user.email = email
@@ -170,4 +170,3 @@ def log_out(request):
     else:
         print("Failed")
     return HttpResponseRedirect(reverse('home'))
-
