@@ -1,0 +1,58 @@
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<!------ Include the above in your HEAD tag ---------->
+
+<div class="container">
+	<div class="row">
+
+        <div class="col-md-7 ">
+
+            <div class="panel panel-default">
+                <div class="panel-heading">  <h4 >User Profile</h4></div>
+                <div class="panel-body">
+                    <div class="box box-info">
+
+                            <div class="box-body">
+                                <div class="col-sm-6">
+                                    <div  align="center"> <img alt="User Pic" src="https://x1.xingassets.com/assets/frontend_minified/img/users/nobody_m.original.jpg" id="profile-image1" class="img-circle img-responsive">
+
+                                     </div>
+                                    <br>
+
+                                </div>
+                                <div class="col-sm-6">
+                                    <h4 style="color:#00b1b1;">{{ user.username }}  </h4>
+                                </div>
+                                <div class="clearfix"></div>
+                                <hr style="margin:5px 0 5px 0;">
+                                <div class="col-sm-5 col-xs-6 tital " >First Name:</div> <div class="col-sm-7 col-xs-6 ">{{ user.first_name }}</div>
+                                <div class="clearfix"></div> <div class="bot-border"></div>
+
+                                <div class="col-sm-5 col-xs-6 tital " >Last Name:</div> <div class="col-sm-7"> {{ user.last_name }}</div>
+                                <div class="clearfix"></div> <div class="bot-border"></div>
+
+                                <div class="col-sm-5 col-xs-6 tital " >Date Of Joining:</div> <div class="col-sm-7">{{ user.dat_joined }}</div>
+                                <div class="clearfix"></div> <div class="bot-border"></div>
+
+                                <div class="col-sm-5 col-xs-6 tital " >Email</div> <div class="col-sm-7">{{ user.email }}</div>
+                                <div class="clearfix"></div> <div class="bot-border"></div>
+
+                            </div>
+
+                            <form action="/user/edit_profile/">
+                                <input type="submit" value="Edit" class="button"/>
+                            </form>
+                            <form action="/user/logout/">
+                                <input type="submit" value="logout", class="button">
+                            </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+

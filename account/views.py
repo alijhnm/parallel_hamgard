@@ -7,24 +7,67 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.decorators.http import require_http_methods
-from django.views.generic import FormView, TemplateView
+from django.views.generic import FormView, TemplateView, DetailView, View
 
 from account.tokens import account_activation_token
-from .models import User
-from .forms import RegisterForm, LoginForm
+from .models import User, Profile
+from .forms import RegisterForm, LoginForm, EditProfileForm
 from .utils import send_html_mail
+from django.contrib.auth.decorators import login_required
+
+
+class LoginRequiredMixin(View):
+
+    @classmethod
+    def as_view(cls):
+        return login_required(super(LoginRequiredMixin, cls).as_view())
 
 
 class IndexView(TemplateView):
     template_name = "account/index.html"
 
 
-@require_http_methods(["POST", "GET"])
-def log_out(request):
-    user = request.user
-    if user:
-        logout(request)
-    return HttpResponseRedirect(reverse('home'))
+class HomeView(TemplateView):
+    template_name = "account/home.html"
+
+
+class ProfileView(DetailView):
+    template_name = "account/profile.html"
+    model = Profile
+
+    def get_object(self, queryset=None):
+        pk = self.kwargs.get('pk')
+        obj = self.model.objects.get(pk=pk)
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context['user'] = self.object.user
+        return context
+
+
+class EditProfileView(LoginRequiredMixin, FormView):
+    login_required = True
+    template_name = "account/profile_edit.html"
+    form_class = EditProfileForm
+
+    def form_valid(self, form):
+
+        print(self.kwargs)
+        first_name = form.cleaned_data["first_name"]
+        last_name = form.cleaned_data["last_name"]
+        email = form.cleaned_data["email"]
+        phone_number = form.cleaned_data["phone_number"]
+        user = self.request.user
+
+        print(user)
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email
+        user.phone_number = phone_number
+        user.save()
+
+        return HttpResponseRedirect(reverse("account:profile_page", args=(user.profile.pk,)))
 
 
 class LoginView(FormView):
@@ -37,7 +80,8 @@ class LoginView(FormView):
 
         user = authenticate(username=username, password=password)
         if user:
-            return HttpResponseRedirect(reverse("account:index"))
+            login(self.request, user)
+            return HttpResponseRedirect(reverse("account:profile_page", args=(user.profile.pk,)))
         else:
             return render(self.request, self.template_name, {"form": form,
                                                              "error_message": "Invalid username or password"})
@@ -72,7 +116,7 @@ class RegisterView(FormView):
             )
             user.first_name = form.cleaned_data['first_name']
             user.last_name = form.cleaned_data['last_name']
-            user.phone_number = form.cleaned_data['phone_number']
+            user.mobile_number = form.cleaned_data['phone_number']
             user.is_active = False
             user.save()
             current_site = get_current_site(self.request)
@@ -85,7 +129,6 @@ class RegisterView(FormView):
             })
             send_html_mail(subject, message, (user.email,))
             # Login the user
-            login(self.request, user)
             return HttpResponseRedirect(reverse('account:account_activation_sent'))
 
 
@@ -119,5 +162,12 @@ def activate(request, uidb64, token):
         return HttpResponseRedirect(reverse("account:failure"))
 
 
-class HomeView(TemplateView):
-    template_name = "account/home.html"
+@require_http_methods(["POST", "GET"])
+def log_out(request):
+    user = request.user
+    if user:
+        logout(request)
+    else:
+        print("Failed")
+    return HttpResponseRedirect(reverse('home'))
+

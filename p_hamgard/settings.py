@@ -127,6 +127,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 
 AUTH_USER_MODEL = 'account.User'
+AUTH_PROFILE_MODEL = 'account.Profile'
 
 # Email Settings:
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
